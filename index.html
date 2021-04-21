@@ -11,15 +11,26 @@
     <div style="display:flex;justify-content:center;align-items:center;width:100%;height:100%;flex-direction:column;">
       <canvas id="can"></canvas>
 
-      <div id="brushes" class="toolbar" style="display:flex;justify-content:flex-start;align-items:center;flex-direction:row;">
+      <div id="brushes" class="toolbar"
+        style="display:flex;justify-content:flex-start;align-items:center;flex-direction:row;">
       </div>
-      <div style="color:white;font-family:Arial, Helvetica, sans-serif;backdrop-filter:blur(2px);padding:4px;border-radius:8px">
+
+      <div id="cursor" style="display:flex;justify-content:center;align-items:center;"></div>
+
+      <div class="hint">
+        <span style="font-family: monospace;">[0-9]</span>&nbsp;to change brush size.
+      </div>
+      <div class="hint">
+        <span style="font-family: monospace;">[Ctrl-Z]</span>&nbsp;to undo.&nbsp;<span
+          style="font-family: monospace;">[Shift-Ctrl-Z]</span>&nbsp;to redo.
+      </div>
+      <div class="hint">
         Right click the canvas to save an image.
       </div>
-  </div>
+    </div>
 
 
-  <script src="./script.js"></script>
+    <script src="./script.js"></script>
 </body>
 
 </html>

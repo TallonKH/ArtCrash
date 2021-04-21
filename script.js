@@ -14,12 +14,17 @@ const randIpsumPhrase = () => {
   return phrase;
 }
 
+const clamp = (x, a, b) => Math.min(Math.max(a, x), b);
+
 const defaultDrawFunc = (ctx, brush) => drawImage(ctx, brush, mousePos, 0);
-const dataManipFunc = (ctx, scale, func) => {
-  const ds = scale >> 1;
-  const dx = mousePos[0] - ds;
-  const dy = mousePos[1] - ds;
-  const imageData = ctx.getImageData(dx, dy, scale, scale);
+const dataManipFunc = (ctx, dims, scale, func) => {
+  const w = dims[0] * scale * drawSize;
+  const h = dims[1] * scale * drawSize;
+  const dx = ~~clamp(mousePos[0] - (w / 2), 0, can.width);
+  const dy = ~~clamp(mousePos[1] - (h / 2), 0, can.height);
+  const imageData = ctx.getImageData(
+    dx, dy,
+    ~~clamp(w, 0, can.width), ~~clamp(h, 0, can.height));
   func(imageData);
   ctx.putImageData(imageData, dx, dy);
 }
@@ -27,17 +32,18 @@ const brushes = [{
     name: "Cursor",
     iconDrawing: true,
     iconPath: "./images/cursor.png",
-    scale: 0.5,
+    scale: 1,
+    dims: Object.seal([0, 0]),
     img: null,
     toolbarButton: null,
     drawFunc: (ctx, brush) => {
       ctx.beginPath();
-      ctx.moveTo(prevMousePos[0], prevMousePos[1]);
-      ctx.lineTo(mousePos[0], mousePos[1]);
+      ctx.moveTo(~~prevMousePos[0], ~~prevMousePos[1]);
+      ctx.lineTo(~~mousePos[0], ~~mousePos[1]);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 10;
+      ctx.lineWidth = 20 * brush.scale * drawSize;
       ctx.stroke();
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 16 * brush.scale * drawSize;
       ctx.strokeStyle = "#000";
       ctx.stroke();
       drawImage(ctx, brush, mousePos, 0);
@@ -47,6 +53,7 @@ const brushes = [{
     name: "Wheel",
     iconDrawing: true,
     iconPath: "./images/wheel.png",
+    dims: Object.seal([0, 0]),
     scale: 0.6,
     img: null,
     toolbarButton: null,
@@ -56,10 +63,11 @@ const brushes = [{
     name: "Hole",
     iconDrawing: true,
     iconPath: "./images/hole.png",
-    scale: 100,
+    dims: Object.seal([50, 50]),
+    scale: 1,
     img: null,
     toolbarButton: null,
-    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let i = 0; i < raw.length; i += 4) {
         raw[i + 3] = raw[i + 3] * 0.8;
@@ -70,10 +78,11 @@ const brushes = [{
     name: "Shift",
     iconDrawing: false,
     iconPath: "./images/shift.png",
-    scale: 200,
+    dims: Object.seal([200, 200]),
+    scale: 1,
     img: null,
     toolbarButton: null,
-    drawFunc: (ctx, brushDat) => dataManipFunc(ctx, brushDat.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let i = 0; i < raw.length - 4; i++) {
         raw[i] = raw[i + 4];
@@ -87,10 +96,11 @@ const brushes = [{
     name: "Stretch",
     iconDrawing: false,
     iconPath: "./images/stretch.png",
-    scale: 200,
+    dims: Object.seal([200, 200]),
+    scale: 1,
     img: null,
     toolbarButton: null,
-    drawFunc: (ctx, brushDat) => dataManipFunc(ctx, brushDat.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width - 1; x++) {
         for (let y = 0; y < data.height - 1; y++) {
@@ -115,10 +125,11 @@ const brushes = [{
     name: "Sort",
     iconDrawing: false,
     iconPath: "./images/sort.png",
-    scale: 200,
+    dims: Object.seal([200, 200]),
+    scale: 1,
     img: null,
     toolbarButton: null,
-    drawFunc: (ctx, brushDat) => dataManipFunc(ctx, brushDat.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width; x++) {
         for (let y = 0; y < data.height - 1; y++) {
@@ -150,10 +161,11 @@ const brushes = [{
     name: "Bleed",
     iconDrawing: false,
     iconPath: "./images/bleed.png",
-    scale: 200,
+    dims: Object.seal([200, 200]),
+    scale: 1,
     img: null,
     toolbarButton: null,
-    drawFunc: (ctx, brushDat) => dataManipFunc(ctx, brushDat.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width; x++) {
         if (Math.random() < 0.5) {
@@ -180,27 +192,30 @@ const brushes = [{
     name: "Text",
     iconDrawing: false,
     iconPath: "./images/text.png",
+    dims: Object.seal([10, 25]),
     scale: 1,
     img: can,
     toolbarButton: null,
     drawFunc: (ctx, brush) => {
       const text = randIpsumPhrase();
       ctx.strokeStyle = "#fff";
+      ctx.textBaseline = "middle";
       ctx.lineWidth = 4;
-      ctx.font = "24px Times New Roman";
-      ctx.strokeText(text, mousePos[0], mousePos[1]);
+      ctx.font = (24 * drawSize * brush.scale) + "px Times New Roman";
+      ctx.strokeText(text, ~~mousePos[0], ~~mousePos[1]);
       ctx.fillStyle = "#000";
-      ctx.fillText(text, mousePos[0], mousePos[1]);
+      ctx.fillText(text, ~~mousePos[0], ~~mousePos[1]);
     },
   },
   {
     name: "Contrast",
     iconDrawing: false,
     iconPath: "./images/rgb.png",
-    scale: 200,
+    dims: Object.seal([200, 200]),
+    scale: 1,
     img: can,
     toolbarButton: null,
-    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.scale, (data) => {
+    drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       v = 255 / (3 + Math.random() * 5);
       for (let i = 0; i < raw.length; i += 4) {
@@ -218,6 +233,7 @@ const brushes = [{
     name: "Canvas",
     iconDrawing: false,
     iconPath: "./images/missing.png",
+    dims: Object.seal([can.width, can.height]),
     scale: 1,
     img: can,
     toolbarButton: null,
@@ -227,6 +243,7 @@ const brushes = [{
     name: "MiniCanvas",
     iconDrawing: false,
     iconPath: "./images/missing2.png",
+    dims: Object.seal([can.width, can.height]),
     scale: 0.5,
     img: can,
     toolbarButton: null,
@@ -234,7 +251,7 @@ const brushes = [{
   },
 ];
 
-let activeImage = 0;
+let activeBrush = 0;
 
 let mouseIn = false;
 can.addEventListener("mouseenter", (e) => {
@@ -245,27 +262,28 @@ can.addEventListener("mouseleave", (e) => {
   mouseIn = false;
 });
 
-const eToMousePos = (e) => [
-  ~~((e.offsetX / displayDims[0]) * can.width),
-  ~~((e.offsetY / displayDims[1]) * can.height)
-];
+const eToMousePos = (e, arr) => {
+  arr[0] = (e.offsetX / displayDims[0]) * can.width;
+  arr[1] = (e.offsetY / displayDims[1]) * can.height;
+}
 
-let displayDims = null;
+let displayDims = Object.seal([0, 0]);
 new ResizeObserver((es) => {
   const e = es[0];
-  displayDims = [e.contentRect.width, e.contentRect.height];
+  displayDims[0] = e.contentRect.width;
+  displayDims[1] = e.contentRect.height;
 }).observe(can);
 
 drawImage = (ctx, imgDat, position, rotation) => {
   const img = imgDat.img;
-  const width = ~~(img.width * imgDat.scale);
-  const height = ~~(img.height * imgDat.scale);
+  const width = ~~(img.width * imgDat.scale * drawSize);
+  const height = ~~(img.height * imgDat.scale * drawSize);
 
   ctx.setTransform(1, 0, 0, 1, position[0], position[1]); // sets scale and origin
   ctx.rotate(rotation);
   ctx.drawImage(img,
     0, 0,
-    img.width, img.height,
+    ~~img.width, ~~img.height,
     -(width >> 1), -(height >> 1),
     width, height);
 
@@ -273,7 +291,7 @@ drawImage = (ctx, imgDat, position, rotation) => {
 }
 
 const doDraw = () => {
-  const imgDat = brushes[activeImage];
+  const imgDat = brushes[activeBrush];
   imgDat.drawFunc(ctx, imgDat);
 }
 
@@ -311,17 +329,42 @@ const incrementState = () => {
 }
 
 let drawSize = 1;
-let mousePos = null;
-let prevMousePos = null;
-can.addEventListener("mousemove", (e) => {
-  mousePos = eToMousePos(e);
+const mousePos = Object.seal([0, 0]);
+const prevMousePos = Object.seal([0, 0]);
+const mousePagePos = Object.seal([0, 0]);
 
-  if (mouseDown) {
+const brushPreview = document.getElementById("cursor");
+const brushPreviewDims = Object.seal([0, 0]);
+const updateBrushPreviewDims = () => {
+  const brush = brushes[activeBrush];
+  brushPreviewDims[0] = brush.dims[0] * brush.scale * drawSize;
+  brushPreviewDims[1] = brush.dims[1] * brush.scale * drawSize;
+
+  brushPreview.style.width = brushPreviewDims[0] + "px";
+  brushPreview.style.height = brushPreviewDims[1] + "px";
+  updateBrushPreviewPos();
+  brushPreview.textContent = drawSize;
+}
+
+const updateBrushPreviewPos = () => {
+  brushPreview.style.left = (mousePagePos[0] - (brushPreviewDims[0] / 2)) + "px";
+  brushPreview.style.top = (mousePagePos[1] - (brushPreviewDims[1] / 2)) + "px";
+}
+
+document.addEventListener("mousemove", (e) => {
+  eToMousePos(e, mousePos);
+  mousePagePos[0] = e.pageX;
+  mousePagePos[1] = e.pageY;
+  updateBrushPreviewPos();
+  if (mouseDown && mouseIn) {
     doDraw();
   }
 
-  prevMousePos = mousePos;
+  prevMousePos[0] = mousePos[0];
+  prevMousePos[1] = mousePos[1];
 });
+
+
 
 let time = 0;
 window.setInterval((e) => {
@@ -329,11 +372,11 @@ window.setInterval((e) => {
 }, 33);
 
 let mouseDown = false;
-let mouseDownPos = null;
+let mouseDownPos = Object.seal([0, 0]);
 can.addEventListener("mousedown", (e) => {
   if (e.button === 0) {
     mouseDown = true;
-    mouseDownPos = eToMousePos(e);
+    eToMousePos(e, mouseDownPos);
     pushState();
     doDraw();
   }
@@ -355,10 +398,60 @@ document.addEventListener("keydown", (e) => {
         }
       }
       break;
+    case "0":
+      drawSize = 0.05;
+      updateBrushPreviewDims();
+      break;
+    case "1":
+      drawSize = 0.1;
+      updateBrushPreviewDims();
+      break;
+    case "2":
+      drawSize = 0.25;
+      updateBrushPreviewDims();
+      break;
+    case "3":
+      drawSize = 0.5;
+      updateBrushPreviewDims();
+      break;
+    case "4":
+      drawSize = 0.75;
+      updateBrushPreviewDims();
+      break;
+    case "5":
+      drawSize = 1;
+      updateBrushPreviewDims();
+      break;
+    case "6":
+      drawSize = 1.25;
+      updateBrushPreviewDims();
+      break;
+    case "7":
+      drawSize = 1.5;
+      updateBrushPreviewDims();
+      break;
+    case "8":
+      drawSize = 2;
+      updateBrushPreviewDims();
+      break;
+    case "9":
+      drawSize = 3;
+      updateBrushPreviewDims();
+      break;
   }
 });
 
+const selectBrush = (i) => {
+  brushes[activeBrush].toolbarButton.classList.remove("selected");
+  brushes[i].toolbarButton.classList.add("selected");
+  activeBrush = i;
+  updateBrushPreviewDims();
+}
+
+let pendingLoads = brushes.length;
+
 const toolbar = document.getElementById("brushes");
+
 for (let i = 0; i < brushes.length; i++) {
   const brush = brushes[i];
   // iconDrawing = it draws its icon
@@ -366,19 +459,24 @@ for (let i = 0; i < brushes.length; i++) {
     const img = new Image();
     img.onload = () => {
       brush.img = img;
+      brush.dims[0] = img.width;
+      brush.dims[1] = img.height;
+      console.log(brush.iconPath + " " + brush.dims);
+      pendingLoads--;
+      if (pendingLoads === 0) {
+        onLoaded()
+      }
     }
     // img.crossOrigin = "data";
     img.src = brush.iconPath;
+  } else {
+    pendingLoads--;
   }
 
   const button = document.createElement("div");
   brush.toolbarButton = button;
   button.className = "toolbar-item";
-  button.addEventListener("click", (e) => {
-    brushes[activeImage].toolbarButton.classList.remove("selected");
-    activeImage = i;
-    button.classList.add("selected");
-  });
+  button.addEventListener("click", () => selectBrush(i));
   const buttonIcon = document.createElement("img");
   if (brush.iconPath !== null) {
     buttonIcon.src = brush.iconPath;
@@ -387,7 +485,7 @@ for (let i = 0; i < brushes.length; i++) {
   toolbar.appendChild(button);
 }
 
-rgb_hsl = (r, g, b) => {
+const rgb_hsl = (r, g, b) => {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h;
@@ -413,4 +511,9 @@ rgb_hsl = (r, g, b) => {
     h /= 6;
   }
   return [h, s, l];
+}
+
+function onLoaded() {
+  selectBrush(0);
+  console.log("loaded");
 }

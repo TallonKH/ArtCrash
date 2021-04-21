@@ -3,7 +3,7 @@ const ctx = can.getContext("2d");
 can.width = 512;
 can.height = 512;
 
-let ipsum = "a ac adipiscing aliquam amet at augue blandit commodo condimentum consectetur consequat convallis cras curabitur cursus diam dictum dignissim dolor dui duis efficitur eget elementum elit enim erat eros est eu ex faucibus felis fringilla fusce gravida hendrerit iaculis id imperdiet in integer ipsum justo lacinia lacus leo ligula lobortis lorem maecenas magna malesuada mauris maximus molestie nam nec neque nibh nisi nisl non nulla ornare pharetra porta posuere praesent pretium purus quam quis risus sagittis sapien scelerisque sed sem semper sit sollicitudin tellus tincidunt tristique turpis ultrices ultricies urna ut varius velit venenatis vestibulum vitae vivamus viverra volutpat";
+let ipsum = "a ac adipiscing aliquam amet at augue blandit commodo condimentum consectetur consequat convallis cras curabitur cursus diam dictum dignissim dolor dui duis efficitur eget elementum elit enim erat eros est eu ex faucibus felis fringilla fusce gravida hendrerit iaculis id imperdiet in ipsum justo lacinia lacus leo ligula lobortis lorem maecenas magna malesuada mauris maximus molestie nam nec neque nibh nisi nisl non nulla ornare pharetra porta posuere praesent pretium purus quam quis risus sagittis sapien scelerisque sed sem semper sit sollicitudin tellus tincidunt tristique turpis ultrices ultricies urna ut varius velit venenatis vestibulum vitae vivamus viverra volutpat";
 ipsum = ipsum.split(" ");
 const randIpsum = () => ipsum[~~(Math.random() * ipsum.length)];
 const randIpsumPhrase = () => {
@@ -95,7 +95,7 @@ const brushes = [{
       for (let x = 0; x < data.width - 1; x++) {
         for (let y = 0; y < data.height - 1; y++) {
           const i1 = (x + y * data.width) * 4;
-          const i2 = (x + (y+1) * data.width) * 4;
+          const i2 = (x + (y + 1) * data.width) * 4;
           if (Math.random() < 0.5) {
             raw[i1 + 0] = Math.max(raw[i1 + 0], raw[i2 + 4]);
             raw[i1 + 1] = Math.min(raw[i1 + 1], raw[i2 + 5]);
@@ -277,6 +277,39 @@ const doDraw = () => {
   imgDat.drawFunc(ctx, imgDat);
 }
 
+const maxStates = 20;
+let stateIndex = 0;
+const stateStack = [];
+
+const pushState = () => {
+  stateStack.length = Math.min(stateStack.length, stateIndex);
+  stateIndex++;
+  stateStack.push(ctx.getImageData(0, 0, can.width, can.height));
+}
+
+const decrementState = () => {
+  if (stateIndex > 0) {
+    let removedState = null;
+    if (stateIndex === stateStack.length) {
+      removedState = ctx.getImageData(0, 0, can.width, can.height);
+    }
+
+    stateIndex--;
+    ctx.putImageData(stateStack[stateIndex], 0, 0);
+
+    if (removedState !== null) {
+      stateStack.push(removedState);
+    }
+  }
+}
+
+const incrementState = () => {
+  if (stateIndex < stateStack.length - 1) {
+    stateIndex++;
+    ctx.putImageData(stateStack[stateIndex], 0, 0);
+  }
+}
+
 let drawSize = 1;
 let mousePos = null;
 let prevMousePos = null;
@@ -301,7 +334,7 @@ can.addEventListener("mousedown", (e) => {
   if (e.button === 0) {
     mouseDown = true;
     mouseDownPos = eToMousePos(e);
-
+    pushState();
     doDraw();
   }
 });
@@ -310,6 +343,20 @@ document.addEventListener("mouseup", (e) => {
   mouseDown = false;
 });
 
+document.addEventListener("keydown", (e) => {
+  switch (e.key.toLowerCase()) {
+    case "z":
+      if (e.metaKey || e.ctrlKey) {
+        // e.preventDefault();
+        if (e.shiftKey) {
+          incrementState();
+        } else {
+          decrementState();
+        }
+      }
+      break;
+  }
+});
 
 const toolbar = document.getElementById("brushes");
 for (let i = 0; i < brushes.length; i++) {

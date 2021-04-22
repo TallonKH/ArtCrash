@@ -55,7 +55,7 @@ html {
   width: 8vmin;
   height: 8vmin;
   border: 0.5vmin solid #666;
-  transition: all 0.1s;
+  transition: all 0.2s, width 0.5s, height 0.5s;
   border-radius: 2vmin;
 
   display: flex;
@@ -64,7 +64,15 @@ html {
   /* backdrop-filter: blur(4px); */
 }
 
+.toolbar-item:hover {
+  width: 9vmin;
+  height: 9vmin;
+  transition: all 0.2s, width 0.1s, height 0.1s;
+}
+
 .toolbar-item.selected {
+  width: 10vmin;
+  height: 10vmin;
   border: 0.5vmin solid #00f7ff;
   box-shadow: 0px 0px 1vmin #00abee;
 }
@@ -101,6 +109,14 @@ html {
   display:flex;
   justify-content:center;
   align-items:center;
+  transition: all 0.5s;
+  font-size: medium;
+}
+
+.hint:hover {
+  transition: all 0.1s;
+  font-size: large;
+  background-color: #20afb4cc;
 }
 
 span.keyhint {

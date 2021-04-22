@@ -501,6 +501,39 @@ for (let i = 0; i < brushes.length; i++) {
   toolbar.appendChild(button);
 }
 
+const body2 = document.getElementById("body2");
+can.addEventListener("drop", (e) => {
+  body2.classList.remove("dragover");
+  if(e.dataTransfer.items){
+    const item = e.dataTransfer.items[0];
+    if (item.kind === "file") {
+      const file = item.getAsFile();
+      const img = new Image();
+      img.onload = () => {
+        pushState();
+        // const scale = Math.min(can.width, can.height) / Math.max(img.width, img.height);
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, can.width, can.height);
+      };
+      img.src = URL.createObjectURL(file);
+    }
+  }
+  e.preventDefault();
+});
+
+can.addEventListener("dragover", (e) => {
+  e.preventDefault();  
+});
+
+can.addEventListener("dragenter", (e) => {
+  body2.classList.add("dragover");
+  e.preventDefault();
+});
+
+can.addEventListener("dragleave", (e) => {
+  body2.classList.remove("dragover");
+  e.preventDefault();
+});
+
 const rgb_hsl = (r, g, b) => {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);

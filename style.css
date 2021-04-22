@@ -22,12 +22,12 @@ html {
 }
 
 #can {
-  border: 6px solid #eee;
-  height: 70vmin;
-  width: 70vmin;
+  border: 0.75vmin solid #eee;
+  height: 65vmin;
+  width: 65vmin;
   background: #888a;
-  backdrop-filter: blur(1px);
-  border-radius: 20px;
+  /* backdrop-filter: blur(1px); */
+  border-radius: 3vmin;
 }
 
 #can:active {
@@ -36,36 +36,37 @@ html {
 
 .toolbar {
   user-select: none;
-  border: 6px solid #eee;
+  border: 0.75vmin solid #eee;
   background: #a3c9d2;
   background: linear-gradient(0deg, #5c8198cc 0, #c4e2e4cc 96%);
-  backdrop-filter: blur(1px);
-  margin: 10px;
-  border-radius: 20px;
+  /* backdrop-filter: blur(1px); */
+  margin: 1vmin;
+  border-radius: 3vmin;
 }
 
 .toolbar#brushes {
   min-width: 70vmin;
   min-height: 10vmin;
+  /* flex-wrap: wrap; */
 }
 
 .toolbar-item {
-  margin: 4px;
-  width: 10vmin;
-  height: 10vmin;
-  border: 2px solid #666;
+  margin: 0.5vmin;
+  width: 8vmin;
+  height: 8vmin;
+  border: 0.5vmin solid #666;
   transition: all 0.1s;
-  border-radius: 10px;
+  border-radius: 2vmin;
 
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(4px);
+  /* backdrop-filter: blur(4px); */
 }
 
 .toolbar-item.selected {
-  border: 2px solid #00f7ff;
-  box-shadow: 0px 0px 4px #00abee;
+  border: 0.5vmin solid #00f7ff;
+  box-shadow: 0px 0px 1vmin #00abee;
 }
 
 .toolbar-item>img {
@@ -88,12 +89,22 @@ html {
 
 .hint {
   color:white;
+  background-color: #1da57ccc;
+  /* border: 1px solid #ccc; */
+  box-shadow: 0 0 4px black;
   font-family:Arial, Helvetica, sans-serif;
-  backdrop-filter:blur(2px);
-  padding:4px;
-  border-radius:16px;
+  /* backdrop-filter:blur(2px); */
+  padding:0.5vmin;
+  margin: 0.25vmin;
+  border-radius:2vmin;
   user-select:none;
   display:flex;
   justify-content:center;
   align-items:center;
+}
+
+span.keyhint {
+  color: #001969;
+  font-size: large;
+  font-family: monospace;
 }

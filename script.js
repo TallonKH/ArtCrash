@@ -14,6 +14,10 @@ const randIpsumPhrase = () => {
   return phrase;
 }
 
+const imageTint = "#71e83a33";
+const filterTint = "#3c39e333";
+const deleteTint = "#e83a3a33";
+
 const clamp = (x, a, b) => Math.min(Math.max(a, x), b);
 
 const defaultDrawFunc = (ctx, brush) => drawImage(ctx, brush, mousePos, 0);
@@ -36,6 +40,7 @@ const brushes = [{
     dims: Object.seal([0, 0]),
     img: null,
     toolbarButton: null,
+    buttonTint: imageTint,
     drawFunc: (ctx, brush) => {
       ctx.beginPath();
       ctx.moveTo(~~prevMousePos[0], ~~prevMousePos[1]);
@@ -57,7 +62,50 @@ const brushes = [{
     scale: 0.6,
     img: null,
     toolbarButton: null,
+    buttonTint: imageTint,
     drawFunc: (ctx, brush) => drawImage(ctx, brush, mousePos, time * 20),
+  },
+  {
+    name: "Text",
+    iconDrawing: false,
+    iconPath: "./images/text.png",
+    dims: Object.seal([10, 25]),
+    scale: 1,
+    img: can,
+    toolbarButton: null,
+    buttonTint: imageTint,
+    drawFunc: (ctx, brush) => {
+      const text = randIpsumPhrase();
+      ctx.strokeStyle = "#fff";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 4;
+      ctx.font = (24 * drawSize * brush.scale) + "px Times New Roman";
+      ctx.strokeText(text, ~~mousePos[0], ~~mousePos[1]);
+      ctx.fillStyle = "#000";
+      ctx.fillText(text, ~~mousePos[0], ~~mousePos[1]);
+    },
+  },
+  {
+    name: "Canvas",
+    iconDrawing: false,
+    iconPath: "./images/missing.png",
+    dims: Object.seal([can.width, can.height]),
+    scale: 1,
+    img: can,
+    toolbarButton: null,
+    buttonTint: imageTint,
+    drawFunc: defaultDrawFunc,
+  },
+  {
+    name: "MiniCanvas",
+    iconDrawing: false,
+    iconPath: "./images/missing2.png",
+    dims: Object.seal([can.width, can.height]),
+    scale: 0.5,
+    img: can,
+    toolbarButton: null,
+    buttonTint: imageTint,
+    drawFunc: (ctx, brush) => drawImage(ctx, brush, mousePos, time),
   },
   {
     name: "Hole",
@@ -67,6 +115,7 @@ const brushes = [{
     scale: 1,
     img: null,
     toolbarButton: null,
+    buttonTint: deleteTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let i = 0; i < raw.length; i += 4) {
@@ -82,6 +131,7 @@ const brushes = [{
     scale: 1,
     img: null,
     toolbarButton: null,
+    buttonTint: filterTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let i = 0; i < raw.length - 4; i++) {
@@ -100,6 +150,7 @@ const brushes = [{
     scale: 1,
     img: null,
     toolbarButton: null,
+    buttonTint: filterTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width - 1; x++) {
@@ -129,6 +180,7 @@ const brushes = [{
     scale: 1,
     img: null,
     toolbarButton: null,
+    buttonTint: filterTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width; x++) {
@@ -165,6 +217,7 @@ const brushes = [{
     scale: 1,
     img: null,
     toolbarButton: null,
+    buttonTint: filterTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       for (let x = 0; x < data.width; x++) {
@@ -173,9 +226,9 @@ const brushes = [{
         }
         for (let y = data.height - 1; y >= 0; y--) {
           const i1 = (x + y * data.width) * 4;
-          const i2 = i1 + data.width * 4;
-
           const hsl1 = rgb_hsl(raw[i1] / 255, raw[i1 + 1] / 255, raw[i1 + 2] / 255);
+          const i2 = i1 + data.width * 4;
+          
           const hsl2 = rgb_hsl(raw[i2] / 255, raw[i2 + 1] / 255, raw[i2 + 2] / 255);
 
           if (hsl1[2] > hsl2[2]) {
@@ -189,25 +242,6 @@ const brushes = [{
     }),
   },
   {
-    name: "Text",
-    iconDrawing: false,
-    iconPath: "./images/text.png",
-    dims: Object.seal([10, 25]),
-    scale: 1,
-    img: can,
-    toolbarButton: null,
-    drawFunc: (ctx, brush) => {
-      const text = randIpsumPhrase();
-      ctx.strokeStyle = "#fff";
-      ctx.textBaseline = "middle";
-      ctx.lineWidth = 4;
-      ctx.font = (24 * drawSize * brush.scale) + "px Times New Roman";
-      ctx.strokeText(text, ~~mousePos[0], ~~mousePos[1]);
-      ctx.fillStyle = "#000";
-      ctx.fillText(text, ~~mousePos[0], ~~mousePos[1]);
-    },
-  },
-  {
     name: "Contrast",
     iconDrawing: false,
     iconPath: "./images/rgb.png",
@@ -215,6 +249,7 @@ const brushes = [{
     scale: 1,
     img: can,
     toolbarButton: null,
+    buttonTint: filterTint,
     drawFunc: (ctx, brush) => dataManipFunc(ctx, brush.dims, brush.scale, (data) => {
       const raw = data.data;
       v = 255 / (3 + Math.random() * 5);
@@ -228,26 +263,6 @@ const brushes = [{
         raw[i + 2] = Math.round(raw[i + 2] / v) * v;
       }
     }),
-  },
-  {
-    name: "Canvas",
-    iconDrawing: false,
-    iconPath: "./images/missing.png",
-    dims: Object.seal([can.width, can.height]),
-    scale: 1,
-    img: can,
-    toolbarButton: null,
-    drawFunc: defaultDrawFunc,
-  },
-  {
-    name: "MiniCanvas",
-    iconDrawing: false,
-    iconPath: "./images/missing2.png",
-    dims: Object.seal([can.width, can.height]),
-    scale: 0.5,
-    img: can,
-    toolbarButton: null,
-    drawFunc: (ctx, brush) => drawImage(ctx, brush, mousePos, time),
   },
 ];
 
@@ -476,6 +491,7 @@ for (let i = 0; i < brushes.length; i++) {
   const button = document.createElement("div");
   brush.toolbarButton = button;
   button.className = "toolbar-item";
+  button.style.background = brush.buttonTint;
   button.addEventListener("click", () => selectBrush(i));
   const buttonIcon = document.createElement("img");
   if (brush.iconPath !== null) {

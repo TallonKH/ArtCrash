@@ -28,6 +28,10 @@ html {
   background: #888a;
   /* backdrop-filter: blur(1px); */
   border-radius: 3vmin;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 #can:active {
@@ -112,7 +116,7 @@ html {
   transition: all 0.5s;
   font-size: medium;
 }
-
+ 
 .hint:hover {
   transition: all 0.1s;
   font-size: large;
